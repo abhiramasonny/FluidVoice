@@ -46,6 +46,7 @@ final class SettingsStore: ObservableObject {
         self.repairForcedOnboardingResetIfNeeded()
         self.migrateOverlayBottomOffsetTo50IfNeeded()
         self.migratePrivateAIContextDefaultTo4KIfNeeded()
+        Self.migrateTextInsertionModeToReliablePasteIfNeeded(defaults: self.defaults)
         self.refreshLaunchAtStartupStatus(clearError: true, logMismatch: false)
     }
 
@@ -5094,6 +5095,7 @@ private extension SettingsStore {
         static let enableAIStreaming = "EnableAIStreaming"
         static let copyTranscriptionToClipboard = "CopyTranscriptionToClipboard"
         static let textInsertionMode = "TextInsertionMode"
+        static let reliablePasteMigrationV1 = "TextInsertionModeMigratedToReliablePasteV1"
         static let autoUpdateCheckEnabled = "AutoUpdateCheckEnabled"
         static let betaReleasesEnabled = "BetaReleasesEnabled"
         static let lastUpdateCheckDate = "LastUpdateCheckDate"
@@ -5222,9 +5224,15 @@ private extension SettingsStore {
 }
 
 extension SettingsStore {
+    static func migrateTextInsertionModeToReliablePasteIfNeeded(defaults: UserDefaults) {
+        guard !defaults.bool(forKey: Keys.reliablePasteMigrationV1) else { return }
+        defaults.set(TextInsertionMode.reliablePaste.rawValue, forKey: Keys.textInsertionMode)
+        defaults.set(true, forKey: Keys.reliablePasteMigrationV1)
+    }
+
     enum TextInsertionMode: String, CaseIterable, Identifiable, Codable {
-        case standard
         case reliablePaste
+        case standard
 
         var id: String {
             self.rawValue
@@ -5233,18 +5241,18 @@ extension SettingsStore {
         var displayName: String {
             switch self {
             case .standard:
-                return "Clipboard Free Insert"
+                return "Direct Paste"
             case .reliablePaste:
-                return "Clipboard Paste"
+                return "Clipboard Paste (Recommended)"
             }
         }
 
         var description: String {
             switch self {
             case .standard:
-                return "Fastest path. Inserts text without changing the clipboard, with paste fallback if direct insertion is unavailable."
+                return "Posts text directly without changing the clipboard. Some editors may reject or truncate it."
             case .reliablePaste:
-                return "Compatibility path. Uses a temporary clipboard paste and restores your previous clipboard after insertion."
+                return "Fast, compatible insertion using a temporary clipboard entry that is restored after paste."
             }
         }
     }
@@ -5254,7 +5262,7 @@ extension SettingsStore {
             guard let raw = self.defaults.string(forKey: Keys.textInsertionMode),
                   let mode = TextInsertionMode(rawValue: raw)
             else {
-                return .standard
+                return .reliablePaste
             }
             return mode
         }

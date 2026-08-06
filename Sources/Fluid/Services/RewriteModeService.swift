@@ -159,10 +159,11 @@ final class RewriteModeService: ObservableObject {
         }
     }
 
-    func acceptRewrite() {
+    @MainActor
+    func acceptRewrite() async {
         guard !self.rewrittenText.isEmpty else { return }
         NSApp.hide(nil) // Restore focus to the previous app
-        self.typingService.typeTextInstantly(self.rewrittenText)
+        _ = await self.typingService.typeTextInstantly(self.rewrittenText)
 
         AnalyticsService.shared.capture(
             .outputDelivered,

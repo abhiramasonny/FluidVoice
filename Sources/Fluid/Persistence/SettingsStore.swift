@@ -1830,6 +1830,19 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    var meetingAudioRetentionPolicy: MeetingAudioRetentionPolicy {
+        get {
+            guard let raw = self.defaults.string(forKey: Keys.meetingAudioRetentionPolicy),
+                  let policy = MeetingAudioRetentionPolicy(rawValue: raw)
+            else { return .days7 }
+            return policy
+        }
+        set {
+            objectWillChange.send()
+            self.defaults.set(newValue.rawValue, forKey: Keys.meetingAudioRetentionPolicy)
+        }
+    }
+
     var preferredOutputDeviceUID: String? {
         get { self.defaults.string(forKey: Keys.preferredOutputDeviceUID) }
         set { self.defaults.set(newValue, forKey: Keys.preferredOutputDeviceUID) }
@@ -4903,6 +4916,7 @@ private extension SettingsStore {
         static let preferredInputDeviceUID = "PreferredInputDeviceUID"
         static let preferredOutputDeviceUID = "PreferredOutputDeviceUID"
         static let meetingRecordingDefaults = "MeetingRecordingDefaults"
+        static let meetingAudioRetentionPolicy = "MeetingAudioRetentionPolicy"
         static let microphoneSelectionMode = "MicrophoneSelectionMode"
         static let appMicSelectionMigrationVersion = "AppOnlyMicrophoneSelectionMigrationVersion"
         static let visualizerNoiseThreshold = "VisualizerNoiseThreshold"

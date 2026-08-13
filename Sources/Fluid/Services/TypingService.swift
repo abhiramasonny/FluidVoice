@@ -172,8 +172,8 @@ final class TypingService {
 
     /// Best-effort: returns the text immediately before the caret in the currently focused
     /// text field. Used by Continuous Dictation Mode to decide capitalization when chaining
-    /// transcribed segments. Returns "" when the focused field/context is unavailable.
-    static func textBeforeCursorInFocusedField() -> String {
+    /// transcribed segments. Returns nil when the focused field/context is unavailable.
+    static func textBeforeCursorInFocusedField() -> String? {
         TypingService().captureTextBeforeCursorInFocusedField()
     }
 
@@ -1077,8 +1077,8 @@ final class TypingService {
         )
     }
 
-    private func captureTextBeforeCursorInFocusedField() -> String {
-        guard let snapshot = self.captureFocusedTextSnapshot() else { return "" }
+    private func captureTextBeforeCursorInFocusedField() -> String? {
+        guard let snapshot = self.captureFocusedTextSnapshot() else { return nil }
 
         if let scriptValue = snapshot.appScriptValue,
            let scriptRange = snapshot.appScriptSelectedRange
@@ -1092,7 +1092,7 @@ final class TypingService {
             return Self.prefix(in: value, before: selectedRange.location)
         }
 
-        return ""
+        return nil
     }
 
     private static func prefix(in text: String, before location: Int) -> String {

@@ -4679,11 +4679,11 @@ final class ASRService: ObservableObject {
     /// Spacing and context-aware capitalization are independently controlled.
     ///
     /// Implements the chaining behavior requested in GitHub issue #390.
-    static func applyContinuousDictationFormatting(_ text: String, precedingText: String) -> String {
+    static func applyContinuousDictationFormatting(_ text: String, precedingText: String?) -> String {
         guard !text.isEmpty else { return text }
         let spacingEnabled = SettingsStore.shared.continuousDictationSpacingEnabled
         let smartCapsEnabled = SettingsStore.shared.contextAwareCapitalizationEnabled
-        guard spacingEnabled || smartCapsEnabled else { return text }
+        guard spacingEnabled || smartCapsEnabled, let precedingText else { return text }
 
         var result = text
 

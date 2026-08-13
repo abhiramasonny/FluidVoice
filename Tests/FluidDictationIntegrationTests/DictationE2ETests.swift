@@ -377,6 +377,29 @@ final class DictationE2ETests: XCTestCase {
         }
     }
 
+    func testContinuousDictationFormattingSkipsCapitalizationWhenPrecedingTextUnknown() {
+        self.withRestoredDefaults(keys: [
+            "ContinuousDictationSpacingEnabled",
+            "ContextAwareCapitalizationEnabled",
+        ]) {
+            UserDefaults.standard.set(false, forKey: "ContinuousDictationSpacingEnabled")
+            UserDefaults.standard.set(true, forKey: "ContextAwareCapitalizationEnabled")
+
+            XCTAssertEqual(
+                ASRService.applyContinuousDictationFormatting("and then i continued", precedingText: nil),
+                "and then i continued"
+            )
+            XCTAssertEqual(
+                ASRService.applyContinuousDictationFormatting("and then i continued", precedingText: "i am speaking"),
+                "and then i continued"
+            )
+            XCTAssertEqual(
+                ASRService.applyContinuousDictationFormatting("and then i continued", precedingText: ""),
+                "And then i continued"
+            )
+        }
+    }
+
     func testMentionFormattingLeavesProseAlone() {
         let text = "I am at the store. Meet me at lunch. I am at Paul. Look at Paul's message."
 

@@ -242,7 +242,7 @@ struct ContentView: View {
     @State private var previousSidebarItem: SidebarItem? = nil // Track previous for mode transitions
     @State private var playgroundUsed: Bool = SettingsStore.shared.playgroundUsed
     @State private var recordingAppInfo: (name: String, bundleId: String, windowTitle: String)? = nil
-    @State private var recordingPrecedingText: String = ""
+    @State private var recordingPrecedingText: String?
 
     // Command Mode State
     // @State private var showCommandMode: Bool = false
@@ -1646,11 +1646,11 @@ struct ContentView: View {
         if SettingsStore.shared.needsDictationFormattingContext {
             self.recordingPrecedingText = TypingService.textBeforeCursorInFocusedField()
             DebugLogger.shared.debug(
-                "Captured preceding text for continuous dictation (chars=\(self.recordingPrecedingText.count))",
+                "Captured preceding text for continuous dictation (chars=\(self.recordingPrecedingText?.count ?? -1))",
                 source: "ContentView"
             )
         } else {
-            self.recordingPrecedingText = ""
+            self.recordingPrecedingText = nil
         }
     }
 
@@ -2284,7 +2284,7 @@ struct ContentView: View {
             bundleID: appInfo.bundleId,
             windowTitle: appInfo.windowTitle
         )
-        self.recordingPrecedingText = ""
+        self.recordingPrecedingText = nil
         self.asr.finalText = finalText
         if route == .onboardingSandbox,
            self.isOnboardingVoicePlaygroundStepActive,
@@ -2689,7 +2689,7 @@ struct ContentView: View {
         let gaavText = ASRService.applyGAAVFormatting(literalFormattedText)
         let precedingText = SettingsStore.shared.needsDictationFormattingContext
             ? TypingService.textBeforeCursorInFocusedField()
-            : ""
+            : nil
         var finalText = ASRService.applyContinuousDictationFormatting(gaavText, precedingText: precedingText)
         finalText = ASRService.applyTerminalLiteralAutocompleteSpacing(
             finalText,
@@ -2796,7 +2796,7 @@ struct ContentView: View {
         finalText = ASRService.applyGAAVFormatting(finalText)
         let precedingText = SettingsStore.shared.needsDictationFormattingContext
             ? TypingService.textBeforeCursorInFocusedField()
-            : ""
+            : nil
         finalText = ASRService.applyContinuousDictationFormatting(finalText, precedingText: precedingText)
         finalText = ASRService.applyTerminalLiteralAutocompleteSpacing(
             finalText,
@@ -2804,7 +2804,7 @@ struct ContentView: View {
             bundleID: appInfo.bundleId,
             windowTitle: appInfo.windowTitle
         )
-        self.recordingPrecedingText = ""
+        self.recordingPrecedingText = nil
         let outputPlan = ASRService.makeDictationLiteralOutputPlan(
             for: finalText,
             appName: appInfo.name,
